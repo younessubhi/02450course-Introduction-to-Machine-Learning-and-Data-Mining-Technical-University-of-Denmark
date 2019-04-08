@@ -40,7 +40,7 @@ rcParams.update({'figure.autolayout': True})
 #%%
 
 # Load data without "Delay" column (attribute)
-df = pd.read_csv("../mri-and-alzheimers/oasis_cross-sectional.csv", dtype=None, delimiter=',', encoding=None, usecols = range(11))
+df = pd.read_csv("/Users/Yssubhi/Downloads/02450/mri-and-alzheimers/oasis_cross-sectional.csv", dtype=None, delimiter=',', encoding=None, usecols = range(11))
 df = df.drop("ID", axis=1) # Remove 'ID' column
 df = df.drop("Hand", axis=1) # Remove 'Hand' column
 print(df.columns)
@@ -221,7 +221,7 @@ ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
 ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
 ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
 plt.tight_layout()
-plt.savefig('Figures/3dprojection.pgf')
+plt.savefig('Figures/3dprojection.png')
 plt.show()
 
 print(np.corrcoef(B[:,0], B[:,1]))
