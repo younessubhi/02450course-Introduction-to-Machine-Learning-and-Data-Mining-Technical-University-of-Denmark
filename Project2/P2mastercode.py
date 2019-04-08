@@ -12,11 +12,16 @@ import pandas as pd
 import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 import mpl_toolkits.mplot3d
+from scipy.stats import zscore
+from scipy.linalg import svd
+import seaborn as sns
+
 
 #%% load data
 
-# Load data without "Delay" column (attribute)
+# Load data without "Delay" column (attribute) //// insert own path!
 df = pd.read_csv("/Users/Yssubhi/Downloads/02450/mri-and-alzheimers/oasis_cross-sectional.csv", dtype=None, delimiter=',', encoding=None, usecols = range(11))
 # Remove 'ID' column
 df = df.drop("ID", axis=1)
@@ -46,12 +51,50 @@ classLabels = df['CDR'].unique()
 y = np.asarray(df['CDR'])
 C = len(classLabels)
 
-df = df.drop("CDR", axis=1) # Remove 'Hand' column
+# Remove 'Hand' column
+df = df.drop("CDR", axis=1)
 
-print(df.head()) # Check if it worked
+ # Check if it worked
+print(df.head())
 # %% Extract the raw data
 attributeNames = np.asarray(df.columns)
 print(attributeNames)
 X = df.values
 N, M = X.shape
 print(N,M)
+
+# for fun.. print X
+print(X)
+
+# %% standard derivations
+
+X_z = zscore(X)
+# plt.plot(X_z)
+# print(X_z)
+
+# %% One out of K encoding of gender attributes (M/F into M & F)
+
+print(attributeNames)
+gender = np.array(X[:, 0], dtype=int).T
+# K number of "columns" in the one out of K encoding
+K = gender.max() + 1
+
+# make empty two column N row array
+gender_encoding = np.zeros((gender.size, K))
+# Map the correct values
+gender_encoding[np.arange(gender.size), gender] = 1
+
+# Concatante to end of old data and remove the first column (M/F)
+X = np.concatenate( (X[:, 1:M], gender_encoding), axis=1)
+
+# Remap attributes
+attributeNames = np.append(attributeNames[1:M], ["M", "F"])
+print(X[0,:])
+# Sanity check, should start with 'age', end with 'F'
+print(attributeNames)
+
+# Should now be 216 x 9 (1 attribute more due to encoding)
+N, M = X.shape
+print(N, 'x', M)
+
+# %%
