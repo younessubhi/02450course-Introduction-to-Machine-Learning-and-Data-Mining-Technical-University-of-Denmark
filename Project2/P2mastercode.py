@@ -8,9 +8,11 @@ Created on Mon Apr  8 21:28:35 2019
 #%% Import libs
 
 import numpy as np
+from numpy import squeeze
 import pandas as pd
 import torch
 import torch.nn as nn
+from torch.autograd import Variable
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 import mpl_toolkits.mplot3d
@@ -28,7 +30,7 @@ df = df.drop("ID", axis=1)
 # Remove 'Hand' column
 df = df.drop("Hand", axis=1)
 print(df.columns)
-#df = df.drop("CDR", axis=1)
+# df = df.drop("CDR", axis=1)
 # Drop all rows with any NaN cells
 df = df.dropna()
 print(df['ASF'].describe())
@@ -97,4 +99,87 @@ print(attributeNames)
 N, M = X.shape
 print(N, 'x', M)
 
-# %%
+# %% Linear Regression
+
+# Features are saved in X (9 attributes)
+# Class vector is given by variable y (CDR: CLinical Dementia Rating)
+
+# create new class
+# class is used as a blueprint for our construction
+
+class LR(nn.Module):
+    # self represents the instance of the class
+    def __init__(self, input_size, output_size):
+        super().__init__()
+        self.linear = nn.Linear(input_size, output_size)
+    # define forward method
+    def forward(self, x):
+        pred = self.linear(x)
+        return pred
+
+model = LR(1, 1)
+print(list(model.parameters()))
+
+x = X
+
+Variable(torch.from_numpy(x))
+labels = Variable(torch.from_numpy(y))
+
+
+model.forward(x)
+
+print(model.forward(x))
+
+[w, b] = model.parameters()
+print(w, b)
+
+# w1 = w[0][0].item
+# b1 = b[0].item
+# print(w1, b1)
+
+# putting it into a function
+
+def get_params():
+    return (w[0][0].item(), b[0].item())
+
+def plot_fit(title):
+    plt.title = title
+    w1, b1 = get_params()
+    x1 = np.array([-3000, 3000])
+    y1 = w1*x1 + b1
+    plt.plot(x1, y1, 'r')
+    plt.scatter(X,y)
+    plt.show()
+
+plot_fit('Initial Model')
+
+
+# torch mean ** loss nn.MSELoss()
+criterion = nn.MSELoss()
+# torch stocastic gradient decent, lr learning rate
+optimizer = torch.optim.SGD(model.parameters(), lr = 0.01)
+
+# train model
+
+epochs = 100
+losses = []
+
+for i in range(epochs):
+    y_pred = model.forward(X)
+    loss = criterion(y_pred, y)
+    print("epoch:", i, "loss:", loss.item())
+    
+    losses.append(loss)
+    optimizer.zero_grad
+    loss.backward()
+    optimizer.step()
+    
+plt.plot(range(epochs), losses)
+plt.xlabel('epochs')
+plt.ylabel('losses')
+plot_fit('loss data')
+
+# back to plot_fit
+plot_fit('Trained Model')
+
+
